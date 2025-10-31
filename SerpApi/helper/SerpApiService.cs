@@ -1,6 +1,4 @@
 ﻿using SerpApi.Dtos;
-using System.Net.Http.Headers;
-using System.Net;
 using System.Text.Json;
 
 namespace SerpApi.helper;
@@ -21,17 +19,15 @@ public class SerpApiService : ISerpApiService
     {
         this.appSettingsModel = appSettingsModel;
 
-        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-        _client = httpClientFactory.CreateClient("SerpApi");
-        _apiKey = appSettingsModel.SerpApi.Key;
-
-        _client.BaseAddress = new Uri("https://serpapi.com/");
-        _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        _httpClientFactory = httpClientFactory;
         _logger = logger;
+        _apiKey = appSettingsModel.SerpApi.Key;
     }
 
     public async Task<GoogleMapsSearchResult?> SearchGoogleMapsAsync(string query, string? location = null)
     {
+        using var _client = _httpClientFactory.CreateClient("SerpApi");
+
         if (string.IsNullOrWhiteSpace(query))
             throw new ArgumentException("Query cannot be empty", nameof(query));
 
